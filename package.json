@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "bun test",
+    "test:accuracy": "bun src/testCaptchaAccuracy.ts",
     "start": "bun src/index.ts"
   },
   "keywords": [],
