@@ -11,6 +11,8 @@ import { botToken, delay } from "./utils";
 import { Bot, InputFile } from "grammy";
 import cron from "node-cron";
 
+let failedCaptchaCounter = 1;
+
 if (!botToken) {
   console.error('BOT_TOKEN environment variable is required');
   process.exit(1);
@@ -64,6 +66,7 @@ async function runPuppeteer() {
       !captchaRegex.test(extractedText)
     ) {
       console.log(`Invalid captcha format: "${extractedText}" (expected 6 lowercase letters/digits)`);
+      saveFailedCaptcha(base64Captcha, extractedText, "Invalid format - OCR extraction failed");
       throw new Error("Extraction error");
     }
 
@@ -98,6 +101,8 @@ async function runPuppeteer() {
     if (captchaError) {
       console.log(`❌ Captcha failed: "${extractedText}" was rejected by website`);
       
+      saveFailedCaptcha(base64Captcha, extractedText, "Captcha rejected by website");
+      
       // Send silent notification about captcha failure with image
       try {
         const channelId = process.env.CHANNEL_ID;
@@ -113,7 +118,7 @@ async function runPuppeteer() {
           );
         }
       } catch (telegramError) {
-        console.log("Failed to send captcha failure notification to Telegram");
+        console.error("Failed to send captcha failure notification to Telegram:", telegramError);
       }
       
       throw new Error("Captcha error");
@@ -179,7 +184,10 @@ async function runPuppeteer() {
       error.message !== "Captcha error" &&
       error.message !== "detached"
     ) {
-      await bot.api.sendMessage("-1002242509001", `Unexpected error: ${error.message}`);
+      const channelId = process.env.CHANNEL_ID;
+      if (channelId) {
+        await bot.api.sendMessage(channelId, `Unexpected error: ${error.message}`);
+      }
     } else if (error.message === "Extraction error") {
       console.log("Extraction error occurred, sending captcha image for debugging...");
       
@@ -198,7 +206,7 @@ async function runPuppeteer() {
           );
         }
       } catch (telegramError) {
-        console.log("Failed to send extraction error image to Telegram");
+        console.error("Failed to send extraction error image to Telegram:", telegramError);
       }
       
       setTimeout(runPuppeteer, 5000);
@@ -211,7 +219,7 @@ async function runPuppeteer() {
   }
 }
 
-function saveBase64ToFile(base64String: string) {
+function saveBase64ToFile(base64String: string, filename: string = "image.jpg") {
   const base64Data = extractBase64FromBackground(base64String);
   if (!base64Data) {
     return;
@@ -219,13 +227,37 @@ function saveBase64ToFile(base64String: string) {
 
   const buffer = Buffer.from(base64Data, "base64");
 
-  fs.writeFile(path.join(__dirname, "image.jpg"), buffer, (err) => {
+  fs.writeFile(path.join(__dirname, filename), buffer, (err) => {
     if (err) {
       console.error("Error writing file:", err);
     } else {
-      console.log("File saved successfully");
+      console.log(`File saved successfully: ${filename}`);
     }
   });
+}
+
+function saveFailedCaptcha(base64String: string, extractedText: string, reason: string) {
+  const filename = `image${failedCaptchaCounter}.jpg`;
+  const metaFilename = `image${failedCaptchaCounter}.meta.txt`;
+  
+  saveBase64ToFile(base64String, filename);
+  
+  const metadata = `
+Extracted Text: ${extractedText || 'null'}
+Reason: ${reason}
+Timestamp: ${new Date().toISOString()}
+Counter: ${failedCaptchaCounter}
+`;
+  
+  fs.writeFile(path.join(__dirname, metaFilename), metadata.trim(), (err) => {
+    if (err) {
+      console.error("Error writing metadata file:", err);
+    } else {
+      console.log(`Metadata saved: ${metaFilename}`);
+    }
+  });
+  
+  failedCaptchaCounter++;
 }
 
 function extractBase64FromBackground(style: string) {
@@ -261,7 +293,8 @@ cron.schedule("*/5 * * * *", async () => {
     if (browser) {
       console.log("Browser closed");
       await browser.close();
+      browser = null;
     }
-    process.exit(1);
+    console.log("Restarting after timeout...");
   }
 });
