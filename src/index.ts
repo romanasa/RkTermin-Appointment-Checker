@@ -55,13 +55,15 @@ async function runPuppeteer() {
     saveBase64ToFile(base64Captcha);
 
     const extractedText = await extractValue();
+    
+    // Validate captcha: must be exactly 6 characters, lowercase letters and digits only
+    const captchaRegex = /^[a-z0-9]{6}$/;
     if (
       !extractedText ||
-      extractedText.length < 3 ||
-      extractedText.length > 8 ||
-      extractedText.includes(" ")
+      extractedText.length !== 6 ||
+      !captchaRegex.test(extractedText)
     ) {
-      console.log(extractedText);
+      console.log(`Invalid captcha format: "${extractedText}" (expected 6 lowercase letters/digits)`);
       throw new Error("Extraction error");
     }
 
@@ -96,14 +98,18 @@ async function runPuppeteer() {
     if (captchaError) {
       console.log(`❌ Captcha failed: "${extractedText}" was rejected by website`);
       
-      // Send silent notification about captcha failure
+      // Send silent notification about captcha failure with image
       try {
         const channelId = process.env.CHANNEL_ID;
         if (channelId) {
-          await bot.api.sendMessage(
+          await bot.api.sendPhoto(
             channelId,
-            `🔕 Captcha failed: "${extractedText}" was rejected by website. Retrying...`,
-            { parse_mode: "HTML", disable_notification: true }
+            new InputFile(path.join(__dirname, "image.jpg")),
+            { 
+              caption: `🔕 Captcha failed: "${extractedText}" was rejected by website. Retrying...`,
+              parse_mode: "HTML", 
+              disable_notification: true 
+            }
           );
         }
       } catch (telegramError) {
@@ -174,6 +180,28 @@ async function runPuppeteer() {
       error.message !== "detached"
     ) {
       await bot.api.sendMessage("-1002242509001", `Unexpected error: ${error.message}`);
+    } else if (error.message === "Extraction error") {
+      console.log("Extraction error occurred, sending captcha image for debugging...");
+      
+      // Send captcha image when OCR extraction fails
+      try {
+        const channelId = process.env.CHANNEL_ID;
+        if (channelId) {
+          await bot.api.sendPhoto(
+            channelId,
+            new InputFile(path.join(__dirname, "image.jpg")),
+            { 
+              caption: `🔕 OCR extraction failed. Please check captcha image for debugging.`,
+              parse_mode: "HTML", 
+              disable_notification: true 
+            }
+          );
+        }
+      } catch (telegramError) {
+        console.log("Failed to send extraction error image to Telegram");
+      }
+      
+      setTimeout(runPuppeteer, 5000);
     } else {
       console.log("Known error occurred, retrying...");
       setTimeout(runPuppeteer, 5000);
