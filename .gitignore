@@ -173,3 +173,8 @@ dist
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Project specific files
+src/image.jpg
+src/processed-*.jpg
+/tmp/appointment-checker.log
