@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import extractValue from "./extractValue";
@@ -7,6 +10,11 @@ import { Browser } from "puppeteer";
 import { botToken, delay } from "./utils";
 import { Bot, InputFile } from "grammy";
 import cron from "node-cron";
+
+if (!botToken) {
+  console.error('BOT_TOKEN environment variable is required');
+  process.exit(1);
+}
 
 const bot = new Bot(botToken);
 
@@ -29,8 +37,13 @@ async function runPuppeteer() {
     await page.setDefaultNavigationTimeout(0);
 
     console.log("Going to the page");
+    const appointmentUrl = process.env.APPOINTMENT_URL;
+    if (!appointmentUrl) {
+      throw new Error('APPOINTMENT_URL environment variable is required');
+    }
+    
     await page.goto(
-     process.env.APPOINTMENT_URL,
+      appointmentUrl,
       { waitUntil: "networkidle2" }
     );
 
@@ -44,7 +57,8 @@ async function runPuppeteer() {
     const extractedText = await extractValue();
     if (
       !extractedText ||
-      extractedText.length <= 5 ||
+      extractedText.length < 3 ||
+      extractedText.length > 8 ||
       extractedText.includes(" ")
     ) {
       console.log(extractedText);
@@ -62,7 +76,7 @@ async function runPuppeteer() {
         page.waitForNavigation({ waitUntil: "load" }),
         page.click("#appointment_captcha_month_appointment_showMonth"),
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during navigation:", error.message);
       if (error.message.includes("detached")) {
         console.log("Frame was detached, retrying...");
@@ -80,45 +94,73 @@ async function runPuppeteer() {
     });
 
     if (captchaError) {
+      console.log(`❌ Captcha failed: "${extractedText}" was rejected by website`);
+      
+      // Send silent notification about captcha failure
+      try {
+        const channelId = process.env.CHANNEL_ID;
+        if (channelId) {
+          await bot.api.sendMessage(
+            channelId,
+            `🔕 Captcha failed: "${extractedText}" was rejected by website. Retrying...`,
+            { parse_mode: "HTML", disable_notification: true }
+          );
+        }
+      } catch (telegramError) {
+        console.log("Failed to send captcha failure notification to Telegram");
+      }
+      
       throw new Error("Captcha error");
     }
 
+    console.log(`✅ Captcha accepted: "${extractedText}" was correct!`);
     console.log("Checking for availability");
     const found = await page.evaluate(() => {
-      return document.body.textContent.includes(
+      return document.body.textContent?.includes(
         "Unfortunately, there are no appointments available at this time."
-      );
+      ) || false;
     });
 
     if (found) {
       console.log("Not available");
+      const channelId = process.env.CHANNEL_ID;
+      if (!channelId) {
+        throw new Error('CHANNEL_ID environment variable is required');
+      }
+      
       await bot.api.sendPhoto(
-        process.env.CHANNEL_ID,
-        new InputFile(path.join(__dirname, "image.jpg"))
+        channelId,
+        new InputFile(path.join(__dirname, "image.jpg")),
+        { disable_notification: true }
       );
       await bot.api.sendMessage(
-        process.env.CHANNEL_ID,
+        channelId,
         `No appointment at this time. \nCaptcha was <b>${extractedText}</b>`,
-        { parse_mode: "HTML" }
+        { parse_mode: "HTML", disable_notification: true }
       );
     } else {
       console.log("Appointment available");
+      const channelId = process.env.CHANNEL_ID;
+      if (!channelId) {
+        throw new Error('CHANNEL_ID environment variable is required');
+      }
+      
       for (let index = 0; index < 25; index++) {
         await bot.api.sendMessage(
-          process.env.CHANNEL_ID,
+          channelId,
           "<b>Appointment available be quickkkkkkkkkkkkkkkkkkkkkkkkkkkkkk</b>",
           { parse_mode: "HTML" }
         );
       }
       await bot.api.sendMessage(
-        process.env.CHANNEL_ID,
+        channelId,
         "<b>Appointment available be quickkkkkkkkkkkkkkkkkkkkkkkkkkkkkk</b>",
         { parse_mode: "HTML" }
       );
     }
 
     await browser.close();
-    process.exit(1);
+    console.log("✅ Check completed successfully. Waiting for next scheduled run...");
 
   } catch (error: any) {
     if (browser) {
