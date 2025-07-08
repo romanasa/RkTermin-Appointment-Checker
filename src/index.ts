@@ -22,6 +22,7 @@ const bot = new Bot(botToken);
 
 puppeteer.use(StealthPlugin());
 let browser: Browser | null = null;
+let isRunning = false;
 
 async function runPuppeteer() {
   try {
@@ -66,7 +67,7 @@ async function runPuppeteer() {
       !captchaRegex.test(extractedText)
     ) {
       console.log(`Invalid captcha format: "${extractedText}" (expected 6 lowercase letters/digits)`);
-      saveFailedCaptcha(base64Captcha, extractedText, "Invalid format - OCR extraction failed");
+      saveFailedCaptcha(base64Captcha, extractedText || "null", "Invalid format - OCR extraction failed");
       throw new Error("Extraction error");
     }
 
@@ -272,18 +273,44 @@ function extractBase64FromBackground(style: string) {
 }
 
 async function runWithTimeout(timeout: number) {
+  let timeoutId: NodeJS.Timeout;
+  
   return Promise.race([
     runPuppeteer(),
-    new Promise<void>((_, reject) =>
-      setTimeout(() => {
+    new Promise<void>((_, reject) => {
+      timeoutId = setTimeout(async () => {
+        console.log("⏰ Task timed out after", timeout/1000, "seconds");
+        
+        // Force close browser if it's still open
+        if (browser) {
+          console.log("🔴 Force closing browser due to timeout");
+          try {
+            await browser.close();
+          } catch (err) {
+            console.error("Error closing browser:", err);
+          }
+          browser = null;
+        }
+        
         reject(new Error("Process timed out"));
-      }, timeout)
-    ),
-  ]);
+      }, timeout);
+    }),
+  ]).finally(() => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  });
 }
 
 console.log("Started app");
 cron.schedule("*/5 * * * *", async () => {
+  if (isRunning) {
+    console.log("⚠️ Previous task still running, skipping this execution to prevent overlap");
+    return;
+  }
+  
+  isRunning = true;
+  
   try {
     console.log("Started job");
     await runWithTimeout(290000);
@@ -296,5 +323,7 @@ cron.schedule("*/5 * * * *", async () => {
       browser = null;
     }
     console.log("Restarting after timeout...");
+  } finally {
+    isRunning = false;
   }
 });
