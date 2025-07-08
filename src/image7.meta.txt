@@ -1,0 +1,4 @@
+Extracted Text: mfcSw
+Reason: Invalid format - OCR extraction failed
+Timestamp: 2025-07-07T19:58:39.075Z
+Counter: 7

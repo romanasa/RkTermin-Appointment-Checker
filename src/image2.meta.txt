@@ -1,0 +1,4 @@
+Extracted Text: fb1yyy
+Reason: Captcha rejected by website
+Timestamp: 2025-07-07T19:55:49.796Z
+Counter: 2

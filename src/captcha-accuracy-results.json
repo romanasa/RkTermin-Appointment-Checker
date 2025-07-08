@@ -1,0 +1,110 @@
+[
+  {
+    "imageFile": "image1.jpg",
+    "originalText": "gr0wS",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T19:55:19.401Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image2.jpg",
+    "originalText": "fb1yyy",
+    "extractedText": "",
+    "reason": "Captcha rejected by website",
+    "timestamp": "2025-07-07T19:55:49.796Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image3.jpg",
+    "originalText": "tr0t",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T19:56:31.480Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image4.jpg",
+    "originalText": "dcdZvZ",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T19:56:56.683Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image5.jpg",
+    "originalText": "9Za39n",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T19:57:45.778Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image6.jpg",
+    "originalText": "vaybii",
+    "extractedText": "",
+    "reason": "Captcha rejected by website",
+    "timestamp": "2025-07-07T19:58:13.337Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image7.jpg",
+    "originalText": "mfcSw",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T19:58:39.075Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image8.jpg",
+    "originalText": "3wnaea",
+    "extractedText": "",
+    "reason": "Captcha rejected by website",
+    "timestamp": "2025-07-07T19:59:07.083Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image9.jpg",
+    "originalText": "afayi11",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T19:59:32.018Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image10.jpg",
+    "originalText": "wyeei",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T19:59:55.831Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image11.jpg",
+    "originalText": "3lS1a",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T20:00:24.299Z",
+    "success": false,
+    "validFormat": false
+  },
+  {
+    "imageFile": "image12.jpg",
+    "originalText": "3lS1a",
+    "extractedText": "",
+    "reason": "Invalid format - OCR extraction failed",
+    "timestamp": "2025-07-07T20:00:26.828Z",
+    "success": false,
+    "validFormat": false
+  }
+]

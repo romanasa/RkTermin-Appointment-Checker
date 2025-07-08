@@ -1,0 +1,4 @@
+Extracted Text: 3wnaea
+Reason: Captcha rejected by website
+Timestamp: 2025-07-07T19:59:07.083Z
+Counter: 8

@@ -1,0 +1,4 @@
+Extracted Text: vaybii
+Reason: Captcha rejected by website
+Timestamp: 2025-07-07T19:58:13.337Z
+Counter: 6

@@ -1,0 +1,4 @@
+Extracted Text: tr0t
+Reason: Invalid format - OCR extraction failed
+Timestamp: 2025-07-07T19:56:31.480Z
+Counter: 3

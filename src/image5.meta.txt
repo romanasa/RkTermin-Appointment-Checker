@@ -1,0 +1,4 @@
+Extracted Text: 9Za39n
+Reason: Invalid format - OCR extraction failed
+Timestamp: 2025-07-07T19:57:45.778Z
+Counter: 5
