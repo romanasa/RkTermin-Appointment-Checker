@@ -20,7 +20,9 @@
     "puppeteer": "^23.1.1",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "tesseract.js": "^6.0.1",
+    "tmp-promise": "^3.0.3"
   },
   "overrides": {
     "clone-deep": "^4.0.1"
