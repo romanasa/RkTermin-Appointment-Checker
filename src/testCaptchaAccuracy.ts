@@ -34,6 +34,7 @@ async function testCaptchaAccuracy() {
 
   const results: TestResult[] = [];
   const captchaRegex = /^[a-z0-9]{6}$/;
+  const standardPath = path.join(srcDir, "image.jpg");
 
   for (const imageFile of imageFiles) {
     const metaFile = imageFile.replace('.jpg', '.meta.txt');
@@ -61,13 +62,13 @@ async function testCaptchaAccuracy() {
 
     // Copy the image to the standard location for OCR processing
     const imagePath = path.join(srcDir, imageFile);
-    const standardPath = path.join(srcDir, "image.jpg");
     fs.copyFileSync(imagePath, standardPath);
 
     // Run OCR extraction
     let extractedText = "";
     try {
-      extractedText = await extractValue();
+      const result = await extractValue();
+      extractedText = result || "";
       console.log(`New extraction: "${extractedText}"`);
     } catch (error) {
       console.log(`New extraction failed: ${error}`);
@@ -75,13 +76,13 @@ async function testCaptchaAccuracy() {
     }
 
     // Check if the new extraction has valid format
-    const validFormat = extractedText && 
+    const validFormat = Boolean(extractedText && 
                        extractedText.length === 6 && 
-                       captchaRegex.test(extractedText);
+                       captchaRegex.test(extractedText));
 
     // Determine if this is a success (we can't know the actual captcha text, 
     // but we can check if the format is now valid)
-    const success = validFormat && extractedText !== originalText;
+    const success = Boolean(validFormat && extractedText !== originalText);
 
     results.push({
       imageFile,
