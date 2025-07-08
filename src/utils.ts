@@ -3,5 +3,5 @@ export async function delay(time: number) {
     setTimeout(resolve, time);
   });
 }
-//Put your botToken here.
+// Bot token is loaded from environment variable BOT_TOKEN
 export const botToken = process.env.BOT_TOKEN || '';
