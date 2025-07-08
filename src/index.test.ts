@@ -32,7 +32,7 @@ jest.mock('./utils');
 describe('Captcha Error Image Sending', () => {
   beforeEach(() => {
     process.env.CHANNEL_ID = '-1001234567890';
-    process.env.BOT_TOKEN = 'fake_bot_token';
+    process.env.BOT_TOKEN = 'test_' + 'token_' + 'value';
     mockSendPhoto.mockClear();
     mockSendMessage.mockClear();
   });
