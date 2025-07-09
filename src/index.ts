@@ -3,7 +3,7 @@ dotenv.config();
 
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import extractValue from "./extractValue";
+import extractValue from "./extractValuePython";
 import fs from "fs";
 import path from "path";
 import { Browser } from "puppeteer";
